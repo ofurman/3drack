@@ -49,7 +49,7 @@ Four M4 threaded rods run through the corner pillars and clamp all six modules t
 
 ### Material: ASA
 
-Use **Bambu ASA** (about 0.75–1.0 kg for the full set). Avoid PETG and PLA:
+Use **Bambu ASA**: about **1.04 kg** for the full set (sliced), so buy **2 spools**. Avoid PETG and PLA:
 
 | | Bambu ASA | Bambu PETG HF | PLA |
 |---|---|---|---|
@@ -72,14 +72,22 @@ Datasheets: [Bambu ASA](https://wiki.bambulab.com/filament-acc/abs-asa-pc/6eaf4c
 
 Every part is 174 × 218 mm, so **print one part per plate** (P1S bed: 256 × 256 mm). Import the STL as-is; it's already in the right orientation.
 
-| Plate | File | Qty | Part height | On the bed |
-|---|---|---|---|---|
-| 1–2 | `stl/tray.stl` | 2 | 39.3 mm | floor down |
-| 3–4 | `stl/bay.stl` | 2 | 75.2 mm | floor down |
-| 5 | `stl/deck.stl` | 1 | 32 mm | plate down |
-| 6 | `stl/lid.stl` | 1 | 22 mm | honeycomb top down (exported flipped) |
+| Plate | File | Qty | Part height | On the bed | Time each | ASA each |
+|---|---|---|---|---|---|---|
+| 1–2 | `stl/tray.stl` | 2 | 39.3 mm | floor down | 5 h 46 m | 181 g |
+| 3–4 | `stl/bay.stl` | 2 | 75.2 mm | floor down | 7 h 25 m | 225 g |
+| 5 | `stl/deck.stl` | 1 | 32 mm | plate down | 3 h 58 m | 139 g |
+| 6 | `stl/lid.stl` | 1 | 22 mm | honeycomb top down (exported flipped) | 3 h 06 m | 88 g |
+| | **Total** | **6** | | | **≈ 33 h 24 m** | **≈ 1,039 g** |
 
-**Print one tray first.** It's the quickest part, so use it to check brim, warping and hole fit before the long bay prints.
+**Where the times come from:**
+
+- Bambu Studio 2.09 CLI estimates for a P1S with a 0.4 mm nozzle.
+- Presets: Bambu ASA @BBL X1C 0.4 nozzle and 0.20mm Standard @BBL X1C. These are the presets Bambu Studio applies to the P1S.
+- Settings as in the table below; Textured PEI plate.
+- They don't include chamber preheating or cool-down, which add about 30 min per plate.
+
+**Print the lid first.** At about 3 h it's the quickest plate, so use it to check brim, warping and rod-hole fit before the 7.5 h bay prints.
 
 ### Bambu Studio settings
 
