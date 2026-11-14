@@ -15,7 +15,7 @@ The parts are tuned for a **Bambu Lab P1S** printing in **ASA**. Every part prin
 |---|---|---|
 | ![Exploded](renders/exploded.png) | ![Rear](renders/assembly_rear.png) | ![Airflow](renders/airflow.png) |
 
-**Assembled size:** 174 × 218 × 283 mm (W × D × H). Leave **at least 10 cm free behind the rack** for exhaust.
+**Assembled size:** 174 × 218 × 274 mm (W × D × H). Leave **at least 10 cm free behind the rack** for exhaust.
 
 ---
 
@@ -39,7 +39,7 @@ The stack, from bottom to top:
 | 3 | bay | 75.2 mm | AI TOP ATOM #1 |
 | 4 | bay | 75.2 mm | AI TOP ATOM #2 |
 | 5 | deck | 32 mm | Raspberry Pi 5 + SSD side by side, front label |
-| 6 | lid | 22 mm | vented top cover |
+| 6 | lid | 13 mm | vented top cover |
 
 Four M4 threaded rods run through the corner pillars and clamp all six modules together.
 
@@ -49,7 +49,7 @@ Four M4 threaded rods run through the corner pillars and clamp all six modules t
 
 ### Material: ASA
 
-Use **Bambu ASA**: about **1.04 kg** for the full set (sliced), so buy **2 spools**. Avoid PETG and PLA:
+Use **Bambu ASA**: about **1.05 kg** for the full set (sliced), so buy **2 spools**. Avoid PETG and PLA:
 
 | | Bambu ASA | Bambu PETG HF | PLA |
 |---|---|---|---|
@@ -74,11 +74,11 @@ Every part is 174 × 218 mm, so **print one part per plate** (P1S bed: 256 × 25
 
 | Plate | File | Qty | Part height | On the bed | Time each | ASA each |
 |---|---|---|---|---|---|---|
-| 1–2 | `stl/tray.stl` | 2 | 39.3 mm | floor down | 5 h 46 m | 181 g |
-| 3–4 | `stl/bay.stl` | 2 | 75.2 mm | floor down | 7 h 25 m | 225 g |
-| 5 | `stl/deck.stl` | 1 | 32 mm | plate down | 3 h 58 m | 139 g |
-| 6 | `stl/lid.stl` | 1 | 22 mm | honeycomb top down (exported flipped) | 3 h 06 m | 88 g |
-| | **Total** | **6** | | | **≈ 33 h 24 m** | **≈ 1,039 g** |
+| 1–2 | `stl/tray.stl` | 2 | 39.3 mm | floor down | 6 h 05 m | 192 g |
+| 3–4 | `stl/bay.stl` | 2 | 75.2 mm | floor down | 7 h 28 m | 227 g |
+| 5 | `stl/deck.stl` | 1 | 32 mm | plate down | 3 h 57 m | 138 g |
+| 6 | `stl/lid.stl` | 1 | 13 mm | honeycomb top down (exported flipped) | 2 h 43 m | 76 g |
+| | **Total** | **6** | | | **≈ 33 h 46 m** | **≈ 1,053 g** |
 
 **Where the times come from:**
 
@@ -87,7 +87,7 @@ Every part is 174 × 218 mm, so **print one part per plate** (P1S bed: 256 × 25
 - Settings as in the table below; Textured PEI plate.
 - They don't include chamber preheating or cool-down, which add about 30 min per plate.
 
-**Print the lid first.** At about 3 h it's the quickest plate, so use it to check brim, warping and rod-hole fit before the 7.5 h bay prints.
+**Print the lid first.** At under 3 h it's the quickest plate, so use it to check brim, warping and rod-hole fit before the 7.5 h bay prints.
 
 ### Bambu Studio settings
 
@@ -95,7 +95,7 @@ Start from the system presets and change only what's listed:
 
 - **Printer:** Bambu Lab P1S, 0.4 mm nozzle
 - **Filament:** Bambu ASA
-- **Process:** 0.20 mm Standard @BBL P1S
+- **Process:** 0.20 mm Standard @BBL X1C (the preset Bambu Studio offers for the P1S)
 
 | Setting | Value | Why |
 |---|---|---|
@@ -110,7 +110,7 @@ Start from the system presets and change only what's listed:
 Why supports aren't needed:
 
 - The hexagons have flat tops, so each one only needs a bridge of about 6.7 mm. ASA handles bridges up to about 40 mm.
-- Strap slits, grilles and spool caps are vertical or chamfered at 45°.
+- Strap slits, grilles and spool drum caps are vertical or chamfered at 45°.
 - The engraved label is 0.8 mm deep on a vertical face.
 
 ### Running the print
@@ -129,8 +129,10 @@ All of these are adjustable in `atom_rack.scad`.
 |---|---|---|
 | M4 rod holes | Ø 4.5 mm | `rod_d` |
 | M4 nut recesses (underside of trays) | 7.4 mm across flats, 4 mm deep | `nut_af`, `nut_h` |
-| Pi 5 screw holes | Ø 2.3 mm, for M2.5 thread-forming screws | in `deck()` |
+| Pi 5 standoffs | Ø 6 mm, Ø 2.3 mm hole for M2.5 thread-forming screws | in `deck()` |
 | Clearance around each Atom | 2 mm per side | `clr` |
+| Atom corner stops | 8 mm tall, 20 mm wide | `stop_h`, `stop_w` |
+| Cable spool drums | Ø 36 mm (18 mm bend radius) | `spool_d` |
 | Strap slits / slots | 3 × 22 mm | in `strap_slits()` / `deck()` |
 
 ---
@@ -139,16 +141,17 @@ All of these are adjustable in `atom_rack.scad`.
 
 | Qty | Item | Notes |
 |---|---|---|
-| 4 | **M4 threaded rod, ~290 mm** | stainless A2; cut to length (OpenSCAD prints the exact value) |
+| 4 | **M4 threaded rod, 279 mm** (+0.5 / −1) | stainless A2; cut to length (OpenSCAD prints the exact value) |
 | 4 | M4 hex nut | sit in the recesses under the bottom tray |
 | 4 | M4 washer | on top of the lid |
-| 4 | M4 acorn (dome) nut | on top of the lid |
+| 4 | M4 wave spring washer (DIN 137 B) | between washer and acorn nut; keeps the stack clamped as the ASA creeps and heat-cycles |
+| 4 | M4 acorn (dome) nut, DIN 1587 | on top of the lid; only 5.3 mm of thread depth, which is why the rod length matters |
 | 4 | M2.5 × 6 mm thread-forming screw | fix the Pi 5 to the deck standoffs |
 | 1 | Hook-and-loop strap, ≤ 20 mm wide | holds the SSD (threads through the deck) |
 | 6–10 | Hook-and-loop cable ties, ≤ 20 mm wide | for the rear raceway strap slits |
 | 4 | Adhesive rubber feet, **≥ 6 mm tall** | under the bottom tray; keeps its floor vents open |
 | 1 | QSFP112 passive DAC, **0.4–0.5 m** | Atom ↔ Atom 200 GbE link |
-| 1 | Raspberry Pi 5 USB-C PSU (27 W) | off-rack |
+| 1 | USB-C to USB-C cable, **0.5 m** | powers the Pi 5 from a USB-C port on the upper Atom |
 | 2 | 10GbE patch cables | Atom → your switch |
 | 1 | 1 GbE patch cable | Pi → your switch |
 
@@ -165,7 +168,7 @@ Work from the bottom up: each module drops over the rods onto the one below.
    2. Stick the rubber feet near the corners, clear of the nut recesses and the floor vents.
 2. **Brick #1**
    1. Lay the brick on the ribs against the left wall, **mains socket (C6) facing the back**, USB-C cable leaving the front.
-   2. Lead the cable forward, then wind it around the two spool posts in the right-hand lane (about 5 turns).
+   2. Lead the cable forward, then wind it around the two spool drums in the right-hand lane (about 4 turns).
    3. Run the end back into the **right rear raceway**. Plug in the mains cord at the back.
 3. **Tray #2 + brick #2**
    1. Drop the second tray over the rods.
@@ -174,25 +177,28 @@ Work from the bottom up: each module drops over the rods onto the one below.
    - Fit each brick **before** stacking the next module: the front grille and rear stops keep it in place, so it can't slide in later.
 4. **Bays**
    1. Drop both bays on.
-   2. Slide each Atom in from the front, lifting it over the 3 mm corner stops.
+   2. Slide each Atom in from the front, lifting it over the 8 mm corner stops, and let it drop between them.
    3. The Atom's front faces the open front of the bay.
 5. **Atom cables** (seen from the **back**)
    - **Power:** the leftmost USB-C is the power input. Bring the brick cables up the **right raceway** (front view: right).
+   - **Leave two USB-C ports free on the upper Atom** for the SSD and the Pi.
    - **10GbE:** down the **left raceway**. Data cables leave the rack at the back, just above the trays.
    - **QSFP112 DAC:** a U-loop in the open centre, from one Atom's QSFP port to the other's.
 6. **Deck**
-   1. Screw the Pi 5 to the standoffs, USB/Ethernet end facing the back.
+   1. Screw the Pi 5 to the standoffs, USB/Ethernet end facing the back. Its USB-C power socket faces the right wall, 32 mm inside it.
    2. Set the SSD on its ribs, USB-C end facing the back. Thread the strap down through one slot, under the deck and back up through the other.
    3. Drop the deck on.
    4. Feed the SSD's 30 cm USB-C cable through the slot behind the SSD to a free USB-C port on the upper Atom (both are 20 Gbit/s).
-   5. Route the Pi's Ethernet into the left raceway and its power cable into the right raceway.
+   5. **Pi power:** plug the 0.5 m USB-C cable into the Pi, run it back along the right wall, down the **right raceway** cut-out and into a free USB-C port on the upper Atom.
+   6. **Pi Ethernet:** the jack is next to the right raceway, so take it down that one. It leaves the rack at the back, just above the trays.
 7. **Lid**
    1. Drop the lid on.
-   2. Add a washer and acorn nut to each rod.
-   3. Tighten **finger-tight plus about a quarter turn**. Over-tightening only compresses the plastic.
+   2. Add a flat washer, a wave washer and an acorn nut to each rod.
+   3. Tighten until the wave washer is **just flat**, then stop. Over-tightening only compresses the plastic.
+   - If an acorn nut stops turning before the wave washer flattens, the rod is too long: it has bottomed out in the nut. Shorten the rod or add a washer.
 8. **Raceways:** strap each bundle through the 3 × 22 mm slits in the rear side walls.
 
-Rule of thumb: **power on the right, data on the left** (front view), with the QSFP loop in the middle.
+Rule of thumb: **power on the right, data on the left** (front view), with the QSFP loop in the middle. The Pi is the exception: both of its cables use the right raceway.
 
 ---
 
@@ -202,7 +208,7 @@ Rule of thumb: **power on the right, data on the left** (front view), with the Q
 |---|---|---|
 | 2× AI TOP ATOM | up to 240 W each (adapter limit; GB10 TDP 140 W) | own fan: front + bottom-front intake, rear-top exhaust |
 | 2× ADP-240KB BA | ~10–25 W loss each; case ~58 °C at full load | passive |
-| Raspberry Pi 5 | ~5–10 W | Active Cooler pulls from above |
+| Raspberry Pi 5 | ~5–10 W, drawn from the upper Atom | Active Cooler pulls from above |
 | IB-1917M-C32a | ~5–8 W | passive aluminium fins |
 
 The Pi and SSD heat figures are estimates.
@@ -216,7 +222,7 @@ How the rack handles it:
 - **Gap above each Atom:** 20 mm, ventilated sideways through the honeycomb walls.
 - **Bricks:** each sits on ribs over floor vents, with 10 mm of air above, a honeycomb front grille and honeycomb side walls.
 - **Pi and SSD:**
-  - The lid's honeycomb top sits 14 mm above the Pi cooler intake.
+  - The lid's honeycomb top sits about 17 mm above the Pi cooler intake (14 mm above the USB ports).
   - The deck and lid sides stay open.
   - The SSD sits on 3 mm ribs, because the deck plate is warm from the Atom below.
 
@@ -237,11 +243,15 @@ Everything is driven by the parameters at the top of `atom_rack.scad`:
 | `label` | `"PWr genwro.ai property"` | text engraved on the deck lip (`""` = none) |
 | `atom`, `brick`, `ssd` | measured sizes | device dimensions |
 | `clr` | 2 | clearance around each Atom |
+| `stop_h`, `stop_w` | 8, 20 | Atom corner stop height / width |
 | `headroom` | 20 | air gap above each Atom |
 | `brick_air` | 10 | air gap above each brick |
-| `lid_clear` | 14 | gap between the Pi cooler and the lid |
+| `spool_d` | 36 | cable spool drum diameter |
+| `pi_plug_clear` | 32 | room between the Pi's power socket and the right wall for the plug |
+| `lid_clear` | 14 | gap between the Pi's USB ports and the lid |
 | `hex_a`, `hex_t` | 14, 2.4 | honeycomb pitch / strut width |
 | `rod_d`, `nut_af` | 4.5, 7.4 | M4 fit |
+| `washer_t`, `wave_t`, `acorn_grip` | 0.8, 0.5, 4.5 | top hardware stack; sets the rod length |
 
 ### Re-exporting STLs
 
@@ -256,8 +266,8 @@ done
 Other views: `part="assembly"` (default), `"exploded"` and `"airflow"`. The console echoes the overall size and the M4 rod length:
 
 ```
-ECHO: "Footprint W x D x H = 174 x 218 x 283 mm"
-ECHO: "M4 threaded rod length ~ 290 mm (x4)"
+ECHO: "Footprint W x D x H = 174 x 218 x 274 mm"
+ECHO: "M4 threaded rod length = 279 mm (x4), tolerance +0.5 / -1"
 ```
 
 ---
@@ -269,9 +279,18 @@ ECHO: "M4 threaded rod length ~ 290 mm (x4)"
 | GIGABYTE AI TOP ATOM | 150 × 150 × 50.5 mm, 1.2 kg; all ports + power button at rear; front-to-back airflow | [datasheet](https://xenon.com.au/wp-content/uploads/2025/10/XENON-Gigabyte-AI-Top-Atom-Datasheet%E2%80%93DS07A.pdf), [ServeTheHome review](https://www.servethehome.com/gigabyte-ai-top-atom-nvidia-gb10-review-a-neat-little-box/) |
 | Delta ADP-240KB BA | 162 × 72 × 23 mm, C6 inlet, 1.8 m captive USB-C | [Delta catalogue](https://filecenter.deltaww.com/ImagesNew/PSBG/202405222156333362002.pdf), [ChargerLAB review](https://www.chargerlab.com/35391-2) |
 | ICY BOX IB-1917M-C32a | 110 × 50 × 16 mm, 145 g, USB-C 20 Gbit/s | [ICY BOX datasheet](https://cdn.shopify.com/s/files/1/0695/2874/8132/files/IB-1917M-C32a_PDF_datasheet_en-uk.pdf) |
-| Raspberry Pi 5 | 85 × 56 mm board, 58 × 49 mm M2.5 hole pattern | Raspberry Pi mechanical drawing |
+| Raspberry Pi 5 | 85 × 56 mm board, 58 × 49 mm M2.5 hole pattern; Active Cooler 13.7 mm tall | Raspberry Pi mechanical drawings ([Active Cooler](https://pip-assets.raspberrypi.com/categories/993-raspberry-pi-active-cooler/documents/RP-008187-DS-1-raspberry-pi-active-cooler-mechanical-drawing.pdf)) |
 
 ### Assumptions to check
 
 - The brick's mains socket and USB-C cable are on **opposite short ends**. This matches the DGX Spark brick; the ADP-240KB BA sources don't show it.
+- The brick's cable has 43 mm between the brick and the front grille for its strain relief and a 90° turn. Check this on the real brick.
 - Atom rear port positions in the renders are illustrative. The rack doesn't depend on them, because the rear is open.
+- The Atom's underside is a stand that lifts the body off the floor (ServeTheHome); its height isn't published. The 8 mm corner stops assume the body starts less than 8 mm up. Measure it and adjust `stop_h` if needed.
+- **Pi power from the Atom:**
+  - The Atom's USB-C port must supply 5 V at up to 3 A; the Atom's documentation doesn't state its per-port current.
+  - On a 3 A source the Pi 5 limits its own USB ports to 600 mA in total, so don't hang bus-powered drives off the Pi.
+  - The Pi loses power whenever that Atom is off, unless the port stays live in standby.
+- **Untested thermals:**
+  - The 20 mm gap above each Atom links the exhaust side to the intake side. If intake temperatures climb under load, close the gap at the rear with a foam strip along the Atom's top-rear edge.
+  - The upper brick sits above the lower brick's floor vents, and the 58 °C case figure is a free-air measurement. Measure the upper brick at full load.

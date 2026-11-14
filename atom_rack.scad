@@ -32,7 +32,7 @@ pi_board = [85, 56];         // Raspberry Pi 5 board, long axis along y, USB/Eth
 pi_hole_inset = 3.5;         // Pi 5 mounting holes: 58 x 49 mm pattern, 3.5 mm from edges
 pi_hole_dx = 58;
 pi_hole_dy = 49;
-pi_height = 27;              // board underside -> top of Active Cooler
+pi_height = 18;              // board underside -> top of the USB/Ethernet stack (Active Cooler tops out at ~15.3)
 ssd = [50, 110, 16];         // ICY BOX IB-1917M-C32a (x, y, z), 145 g, USB-C 20 Gbit/s at the rear end
 
 /* [Rack] */
@@ -42,17 +42,22 @@ floor_t = 4;
 headroom = 20;      // ventilated slot above each Atom
 gutter = 54;        // rear cable / exhaust zone behind the floors
 front_frame = 6;    // floor ahead of the Atom (front corner stops live here)
-stop_h = 3;         // corner stop height
+stop_h = 8;         // corner stop height: must reach the Atom body, which its stand lifts off the floor
+stop_w = 20;        // corner stop width, measured from the side wall
 rod_d = 4.5;        // M4 clearance
 nut_af = 7.4;       // M4 nut across flats + clearance
-nut_h = 4;
+nut_h = 4;          // nut recess depth
+m4_nut_h = 3.2;     // M4 hex nut height (DIN 934)
+washer_t = 0.8;     // M4 flat washer under each top nut
+wave_t = 0.5;       // M4 wave spring washer, flattened: keeps the clamp as the ASA creeps
+acorn_grip = 4.5;   // rod engagement in the acorn nut; DIN 1587 M4 thread depth is only 5.26
 deck_h = 32;        // deck pillars + rear plume fence
 lip_h = 10;         // deck front lip (carries the label)
 rib_h = 2;          // brick stands on ribs so air flows underneath
 brick_air = 10;     // air gap above each brick (case reaches ~58 C at full load)
 ssd_rib_h = 3;      // SSD stands on ribs: deck plate is warm from the Atom below
 label = "PWr genwro.ai property"; // engraved on the deck lip; "" for none
-lid_clear = 14;     // air gap between the Pi Active Cooler intake and the lid
+lid_clear = 14;     // air gap between the Pi's tallest part and the lid
 lid_t = 3;          // lid top plate
 lid_frame = 8;      // lid perimeter beam depth
 
@@ -72,8 +77,10 @@ floor_d  = atom_y1 + clr + 6;                      // 164: floor ends behind the
 D        = floor_d + gutter;                       // 218
 bay_h    = floor_t + atom.z + headroom;            // 75.2
 tray_h   = floor_t + rib_h + brick.z + brick_air;  // 39.3
-lid_h    = floor_t + 6 + pi_height + lid_clear + lid_t - deck_h;  // 22: lid sits on the deck pillars
+lid_h    = floor_t + 6 + pi_height + lid_clear + lid_t - deck_h;  // 13: lid sits on the deck pillars
 total_h  = 2 * tray_h + 2 * bay_h + deck_h + lid_h;
+rod_z0   = nut_h - m4_nut_h;                      // rod end flush with the seated bottom nut
+rod_len  = round(total_h - rod_z0 + washer_t + wave_t + acorn_grip);
 baffle_y = floor_d - 6;                            // side walls are solid behind this line
 
 rod_xy = [for (x = [wall / 2, W - wall / 2]) for (y = [8, D - 8]) [x, y]];
@@ -88,21 +95,31 @@ bx0 = wall + 1;
 by0 = D - 7 - brick.y;
 lane_x0 = bx0 + brick.x + 3;                       // service lane right of the brick
 lane_xc = (lane_x0 + W - wall) / 2;
-spool_y = [30, 150];
-spool_d = 14;
+spool_y = [36, 140];
+spool_d = 36;                                      // drum diameter: 18 mm bend radius for the 240 W cable
+spool_wall = 2.4;                                  // drums are hollow
+spool_h = tray_h - floor_t - 6;                    // drum height below the cap
 
-// deck placement: SSD left, Pi right with its USB-C power edge facing the right wall
-pi_x1 = W - wall - 6;                  // power edge
+// deck placement: SSD left, Pi right. The Pi's USB-C power edge faces the right wall, set back
+// far enough that the plug and the cable bend stay inside the rack; the cable then runs back
+// to the power raceway and down to a USB-C port on the upper Atom.
+pi_plug_clear = 32;
+pi_x1 = W - wall - pi_plug_clear;      // power edge
 pi_x0 = pi_x1 - pi_board.y;
 pi_y1 = floor_d - 2;                   // USB/Ethernet end
 pi_y0 = pi_y1 - pi_board.x;
 ssd_x0 = (wall + pi_x0 - ssd.x) / 2;   // centred between the left wall and the Pi
-ssd_y0 = floor_d - 2 - ssd.y;
+ssd_y1 = floor_d - 3;                  // USB-C end; keeps the rear fences on the plate
+ssd_y0 = ssd_y1 - ssd.y;
 ssd_cx = ssd_x0 + ssd.x / 2;
+// SSD cable pass-through: behind the straight USB-C plug, clear of the data raceway hook
+ssd_slot = [24, D - 10 - (ssd_y1 + 22)];
+ssd_slot_x0 = max(ssd_cx - ssd_slot.x / 2, wall + raceway_w + 6);
+ssd_slot_y0 = ssd_y1 + 22;
 
 echo(str("Footprint W x D x H = ", W, " x ", D, " x ", total_h, " mm"));
 echo(str("Module heights: tray ", tray_h, ", bay ", bay_h, ", deck ", deck_h, ", lid ", lid_h));
-echo(str("M4 threaded rod length ~ ", ceil(total_h + 7), " mm (x4)"));
+echo(str("M4 threaded rod length = ", rod_len, " mm (x4), tolerance +0.5 / -1"));
 
 // 2D (u, v) -> 3D maps for extruding 2D patterns through walls
 M_YZ = [[0, 0, 1, 0], [1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 1]];  // u -> y, v -> z, extrude -> x
@@ -138,11 +155,11 @@ module corner_chamfers(h) {
         translate([x, y, h / 2]) rotate(45) cube([chamfer * sqrt(2), chamfer * sqrt(2), h + 2], center = true);
 }
 
-// hook-and-loop strap slits through the side walls in the rear cable zone
-module strap_slits(h) {
+// hook-and-loop strap slits through the side walls in the rear cable zone (0 = left, 1 = right)
+module strap_slits(h, sides = [0, 1]) {
     sh = min(22, h - 8);
-    for (x = [-1, W - wall - 1]) for (y = [floor_d + 10, floor_d + 30])
-        translate([x, y, (h - sh) / 2]) cube([wall + 2, 3, sh]);
+    for (m = sides) for (y = [floor_d + 10, floor_d + 30])
+        translate([m ? W - wall - 1 : -1, y, (h - sh) / 2]) cube([wall + 2, 3, sh]);
 }
 
 // Solid front pillar + honeycomb panel + solid rear exhaust baffle
@@ -198,15 +215,18 @@ module tray() {
                 translate([x, by0 - 3, floor_t - eps]) cube([12, 3, rib_h + 8]);
                 translate([x, by0 + brick.y, floor_t - eps]) cube([12, 3, rib_h + 8]);
             }
-            // spool posts with chamfered caps (print without supports)
-            for (y = spool_y) translate([lane_xc, y, floor_t - eps]) {
-                cylinder(d = spool_d, h = tray_h - floor_t - 6);
-                translate([0, 0, tray_h - floor_t - 6 - eps]) cylinder(d1 = spool_d, d2 = spool_d + 8, h = 4);
+            // hollow spool drums with chamfered caps (print without supports)
+            for (y = spool_y) translate([lane_xc, y, floor_t - eps]) difference() {
+                union() {
+                    cylinder(d = spool_d, h = spool_h);
+                    translate([0, 0, spool_h - eps]) cylinder(d1 = spool_d, d2 = spool_d + 8, h = 4);
+                }
+                translate([0, 0, eps]) cylinder(d = spool_d - 2 * spool_wall, h = spool_h + 5);
             }
         }
         rod_holes(tray_h);
         nut_recesses();
-        strap_slits(tray_h);
+        strap_slits(tray_h, [1]);  // the brick covers the left wall
         corner_chamfers(tray_h);
         // power raceway passes through the floor
         translate([W - wall - raceway_w, floor_d, -1]) cube([raceway_w + eps, D - 4 - floor_d, floor_t + 2]);
@@ -224,10 +244,10 @@ module bay() {
             side_walls(bay_h);
             rear_hooks(bay_h);
             tie_bar();
-            // corner stops locate the Atom; the centre stays clear for its front/bottom intake
+            // corner stops locate the Atom body; the centre stays clear for its front/bottom intake
             for (m = [0, 1]) translate([m ? W : 0, 0, 0]) mirror([m, 0, 0]) {
-                translate([wall - eps, 0, floor_t - eps]) cube([14, front_frame, stop_h]);
-                translate([wall - eps, atom_y1 + clr, floor_t - eps]) cube([14, 6, stop_h]);
+                translate([wall - eps, 0, floor_t - eps]) cube([stop_w, front_frame, stop_h]);
+                translate([wall - eps, atom_y1 + clr, floor_t - eps]) cube([stop_w, 6, stop_h]);
             }
         }
         rod_holes(bay_h);
@@ -242,7 +262,7 @@ module deck() {
         union() {
             // full-depth plate: heat shield over the upper Atom + exhaust hood over the rear zone
             cube([W, D, floor_t]);
-            // pillars carry the rods; the middle edges stay open for Pi USB-C / HDMI plugs
+            // pillars carry the rods; the middle edges stay open for air and plug access
             for (x = [0, W - wall]) {
                 translate([x, 0, 0]) cube([wall, 22, deck_h]);
                 translate([x, baffle_y, 0]) cube([wall, D - baffle_y, deck_h]);
@@ -252,8 +272,8 @@ module deck() {
             translate([fence_x0 - eps, D - 4, 0]) cube([W - 2 * fence_x0 + 2 * eps, 4, deck_h]);
             // front lip
             translate([wall - eps, 0, 0]) cube([pocket_w + 2 * eps, 4, lip_h]);
-            // Pi 5 standoffs (M2.5 thread-forming screws)
-            for (p = pi_holes()) translate([p.x, p.y, floor_t - eps]) cylinder(d = 7, h = 6);
+            // Pi 5 standoffs (M2.5 thread-forming screws); 6 mm matches the board's keep-out pads
+            for (p = pi_holes()) translate([p.x, p.y, floor_t - eps]) cylinder(d = 6, h = 6);
             // SSD ribs + corner fences
             for (x = [ssd_x0 + 5, ssd_cx - 1, ssd_x0 + ssd.x - 7])
                 translate([x, ssd_y0 + 5, floor_t - eps]) cube([2, ssd.y - 10, ssd_rib_h + eps]);
@@ -268,7 +288,7 @@ module deck() {
         for (x = [ssd_x0 - 6, ssd_x0 + ssd.x + 3])
             translate([x, ssd_y0 + ssd.y / 2 - 11, -1]) cube([3, 22, floor_t + 2]);
         // pass-through for the SSD cable down to an Atom
-        translate([ssd_cx - 12, floor_d + 5, -1]) cube([24, 12, floor_t + 2]);
+        translate([ssd_slot_x0, ssd_slot_y0, -1]) cube([ssd_slot.x, ssd_slot.y, floor_t + 2]);
         if (label != "")
             translate([W / 2, 0.8, lip_h / 2]) rotate([90, 0, 0]) linear_extrude(2)
                 text(label, size = 5, font = "Liberation Sans:style=Bold", halign = "center", valign = "center");
@@ -344,11 +364,11 @@ module brick_model() {
 
 module pi_model() {
     color("green") translate([pi_x0, pi_y0, 0]) cube([pi_board.y, pi_board.x, 1.6]);
-    color([0.25, 0.25, 0.28]) translate([pi_x0 + 8, pi_y0 + 8, 1.6]) cube([40, 45, pi_height - 1.6]);
+    color([0.25, 0.25, 0.28]) translate([pi_x0 + 8, pi_y0 + 8, 1.6]) cube([40, 45, 13.7]);  // Active Cooler
     color("silver") {
-        translate([pi_x0 + 3, pi_y1 - 17, 1.6]) cube([16, 19, 14]);       // Ethernet
-        translate([pi_x0 + 21, pi_y1 - 17, 1.6]) cube([14, 19, 16]);      // USB
-        translate([pi_x0 + 38, pi_y1 - 17, 1.6]) cube([14, 19, 16]);      // USB
+        translate([pi_x1 - 19, pi_y1 - 17, 1.6]) cube([16, 19, 14]);      // Ethernet (power-edge side on the Pi 5)
+        translate([pi_x1 - 36, pi_y1 - 17, 1.6]) cube([14, 19, 16]);      // USB
+        translate([pi_x1 - 54, pi_y1 - 17, 1.6]) cube([14, 19, 16]);      // USB
         translate([pi_x1 - 7, pi_y0 + 7, 1.6]) cube([8, 9, 3.5]);         // USB-C power
     }
 }
@@ -404,22 +424,24 @@ module stack(gap = 0, cables = true, with_lid = true) {
     translate([0, 0, z[4] + floor_t + 6]) pi_model();
     translate([0, 0, z[4] + floor_t + ssd_rib_h]) ssd_model();
 
-    if (gap == 0) color("silver") for (p = rod_xy) translate([p.x, p.y, 0.5]) cylinder(d = 4, h = total_h + 6);
+    if (gap == 0) color("silver") for (p = rod_xy) translate([p.x, p.y, rod_z0]) cylinder(d = 4, h = rod_len);
 
     if (gap == 0 && cables) {
         rx_p = W - wall - raceway_w / 2;   // power raceway centre
         rx_d = wall + raceway_w / 2;       // data raceway centre
         ry = D - 22;
         ax = wall + clr;
+        rs = spool_d / 2 + 3;              // cable centreline radius on the spool drums
 
         for (k = [0, 1]) {
             zb = z[k] + floor_t + rib_h + brick.z / 2;
             zp = z[2 + k] + floor_t + port_z;
-            // USB-C 240 W: brick front -> spool (2 turns shown) -> lane -> power raceway -> PD-in
+            // USB-C 240 W: brick front -> spool (2.5 turns shown) -> lane -> power raceway -> PD-in
             cable(concat(
-                [[bx0 + brick.x / 2, by0, zb], [bx0 + brick.x / 2, by0 - 14, zb], [lane_xc - 11, spool_y[0], zb]],
-                spool_loop(zb - 3, 11), spool_loop(zb + 3, 11),
-                [[lane_xc - 4, spool_y[1] + 25, zb], [rx_p, ry, zb], [rx_p, ry, zp],
+                [[bx0 + brick.x / 2, by0, zb], [bx0 + brick.x / 2, by0 - 14, zb], [lane_xc - rs, spool_y[0], zb]],
+                spool_loop(zb - 3, rs), spool_loop(zb + 3, rs),
+                [for (a = [180 : 30 : 360]) [lane_xc + rs * cos(a), spool_y[0] + rs * sin(a), zb + 3]],
+                [[lane_xc + rs, spool_y[1] + 10, zb], [rx_p, ry, zb], [rx_p, ry, zp],
                  [ax + 128, atom_y1 + 30, zp], [ax + 128, atom_y1, zp]]), 5, "orange");
             // AC (C5 -> C6) out the back
             cable([[bx0 + brick.x / 2, by0 + brick.y, zb], [bx0 + brick.x / 2, D + 20, zb], [bx0 + brick.x / 2, D + 40, 0]], 6, [0.05, 0.05, 0.05]);
@@ -435,16 +457,20 @@ module stack(gap = 0, cables = true, with_lid = true) {
                      [[ax + 44, atom_y1, z2]]), 7, "royalblue");
 
         zd = z[4] + floor_t;
-        // Pi 5 USB-C power -> right edge -> power raceway -> down
-        cable([[pi_x1 + 4, pi_y0 + 11, zd + 9], [W - wall + 2, pi_y0 + 14, zd + 6], [W - wall + 2, floor_d - 20, zd + 6],
-               [rx_p + 4, ry + 4, zd + 2], [rx_p + 4, ry + 4, z[2] + 8], [W - wall - raceway_w - 12, ry + 4, z[2] + 8],
-               [W - wall - raceway_w - 12, D + 40, z[2] + 4]], 4, "red");
-        // Pi Ethernet -> data raceway -> down
-        cable([[pi_x0 + 11, pi_y1, zd + 14], [pi_x0 + 11, pi_y1 + 22, zd + 10], [rx_d + 4, ry + 4, zd + 2], [rx_d + 4, ry + 4, z[2] + 18],
-               [wall + raceway_w + 12, ry + 4, z[2] + 18], [wall + raceway_w + 12, D + 40, z[2] + 14]], 5, "gold");
+        // Pi 5 USB-C power: fed from a USB-C port on the upper Atom. Plug and bend stay inside the
+        // wall line; the cable runs back to the power raceway and down.
+        cable([[pi_x1, pi_y0 + 11, zd + 9], [pi_x1 + 24, pi_y0 + 11, zd + 9], [W - wall - 4, pi_y0 + 26, zd + 7],
+               [W - wall - 4, floor_d - 4, zd + 6], [rx_p + 6, ry + 5, zd + 2], [rx_p + 6, ry + 5, z2 + 12],
+               [ax + 118, atom_y1 + 22, z2], [ax + 118, atom_y1, z2]], 4, "red");
+        // Pi Ethernet: the jack sits next to the power raceway, so it goes down that one and
+        // leaves the rack above the trays
+        cable([[pi_x1 - 11, pi_y1, zd + 14], [pi_x1 - 11, pi_y1 + 24, zd + 12], [rx_p - 7, ry + 3, zd + 2],
+               [rx_p - 7, ry + 3, z[2] + 8], [W - wall - raceway_w - 12, ry + 3, z[2] + 8],
+               [W - wall - raceway_w - 12, D + 40, z[2] + 4]], 5, "gold");
         // SSD -> upper Atom USB-C (20 Gbit/s Gen 2x2 on both ends) with the bundled 30 cm C-C cable,
         // through the pass-through slot in the deck hood
-        cable([[ssd_cx, ssd_y0 + ssd.y, zd + ssd_rib_h + 8], [ssd_cx, floor_d + 11, zd + 4], [ssd_cx, floor_d + 11, zd - 10],
+        sx = ssd_slot_x0 + ssd_slot.x / 2; sy = ssd_slot_y0 + ssd_slot.y / 2;
+        cable([[ssd_cx, ssd_y1, zd + ssd_rib_h + 8], [ssd_cx, ssd_y1 + 20, zd + ssd_rib_h + 8], [sx, sy, zd + 2], [sx, sy, zd - 10],
                [ax + 98, floor_d + 16, z2 + 12], [ax + 98, atom_y1 + 18, z2], [ax + 98, atom_y1, z2]], 4, "purple");
     }
 }
