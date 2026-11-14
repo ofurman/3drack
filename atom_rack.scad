@@ -5,6 +5,7 @@
 //   tray  x2  one Delta ADP-240KB BA 240 W USB-C brick each + hidden spool for its 1.8 m cable
 //   bay   x2  one AI TOP ATOM each
 //   deck  x1  Raspberry Pi 5 + ICY BOX IB-1917M-C32a SSD side by side
+//   lid   x1  honeycomb top cover; open sides keep the Pi cooler and SSD fins breathing
 //
 // Thermal concept
 //   * Atoms breathe front -> back (front grille + bottom-front vent in, rear-top vent out).
@@ -19,9 +20,10 @@
 //   * Bricks ride on ribs with 10 mm of air above, a hex front grille and floor vents.
 //
 // Export one part:  openscad -D 'part="bay"' -o bay.stl atom_rack.scad
+//                   (part="lid" is exported upside down, ready to print)
 // Airflow diagram:  openscad -D 'part="airflow"' -o airflow.png atom_rack.scad
 
-part = "assembly"; // [assembly, exploded, airflow, tray, bay, deck]
+part = "assembly"; // [assembly, exploded, airflow, tray, bay, deck, lid]
 
 /* [Devices] */
 atom  = [150, 150, 51.2];    // GIGABYTE spec W150 x D150 x H50.5 (STH measured 51); 51.2 adds margin
@@ -50,6 +52,9 @@ rib_h = 2;          // brick stands on ribs so air flows underneath
 brick_air = 10;     // air gap above each brick (case reaches ~58 C at full load)
 ssd_rib_h = 3;      // SSD stands on ribs: deck plate is warm from the Atom below
 label = "PWr genwro.ai property"; // engraved on the deck lip; "" for none
+lid_clear = 14;     // air gap between the Pi Active Cooler intake and the lid
+lid_t = 3;          // lid top plate
+lid_frame = 8;      // lid perimeter beam depth
 
 /* [Style] */
 hex_a = 14;         // honeycomb cell pitch
@@ -67,7 +72,8 @@ floor_d  = atom_y1 + clr + 6;                      // 164: floor ends behind the
 D        = floor_d + gutter;                       // 218
 bay_h    = floor_t + atom.z + headroom;            // 75.2
 tray_h   = floor_t + rib_h + brick.z + brick_air;  // 39.3
-total_h  = 2 * tray_h + 2 * bay_h + deck_h;
+lid_h    = floor_t + 6 + pi_height + lid_clear + lid_t - deck_h;  // 22: lid sits on the deck pillars
+total_h  = 2 * tray_h + 2 * bay_h + deck_h + lid_h;
 baffle_y = floor_d - 6;                            // side walls are solid behind this line
 
 rod_xy = [for (x = [wall / 2, W - wall / 2]) for (y = [8, D - 8]) [x, y]];
@@ -95,7 +101,7 @@ ssd_y0 = floor_d - 2 - ssd.y;
 ssd_cx = ssd_x0 + ssd.x / 2;
 
 echo(str("Footprint W x D x H = ", W, " x ", D, " x ", total_h, " mm"));
-echo(str("Module heights: tray ", tray_h, ", bay ", bay_h, ", deck ", deck_h));
+echo(str("Module heights: tray ", tray_h, ", bay ", bay_h, ", deck ", deck_h, ", lid ", lid_h));
 echo(str("M4 threaded rod length ~ ", ceil(total_h + 7), " mm (x4)"));
 
 // 2D (u, v) -> 3D maps for extruding 2D patterns through walls
@@ -269,6 +275,28 @@ module deck() {
     }
 }
 
+// Sits on the deck pillars, clamped by the same rods (acorn nuts on top). Open front and sides,
+// honeycomb top (~70 % open) for the Pi fan intake; the solid rear skirt extends the plume fence.
+module lid() {
+    difference() {
+        union() {
+            for (x = [0, W - wall]) {
+                translate([x, 0, 0]) cube([wall, 22, lid_h]);
+                translate([x, baffle_y, 0]) cube([wall, D - baffle_y, lid_h]);
+            }
+            translate([0, D - 4, 0]) cube([W, 4, lid_h]);
+            // perimeter beams + top plate
+            translate([0, 0, lid_h - lid_frame]) difference() {
+                cube([W, D, lid_frame]);
+                translate([wall, 8, -1]) cube([W - 2 * wall, D - 12, lid_frame - lid_t + 1]);
+            }
+        }
+        rod_holes(lid_h);
+        corner_chamfers(lid_h);
+        translate([wall + 3, 11, lid_h - lid_t - 1]) linear_extrude(lid_t + 2) honeycomb([W - 2 * wall - 6, D - 18]);
+    }
+}
+
 function pi_holes() = [
     for (px = [pi_hole_inset, pi_hole_inset + pi_hole_dx])
         for (py = [pi_hole_inset, pi_hole_inset + pi_hole_dy])
@@ -356,11 +384,11 @@ function spool_loop(z, r) = [
 ];
 
 function stack_z(gap = 0) = [0, tray_h + gap, 2 * (tray_h + gap), 2 * (tray_h + gap) + bay_h + gap,
-                             2 * (tray_h + gap) + 2 * (bay_h + gap)];
+                             2 * (tray_h + gap) + 2 * (bay_h + gap), 2 * (tray_h + gap) + 2 * (bay_h + gap) + deck_h + gap];
 
 // ---------------------------------------------------------------- assembly
 
-module stack(gap = 0, cables = true) {
+module stack(gap = 0, cables = true, with_lid = true) {
     z = stack_z(gap);
     pc = [0.88, 0.88, 0.9];
 
@@ -369,6 +397,7 @@ module stack(gap = 0, cables = true) {
     color(pc) translate([0, 0, z[2]]) bay();
     color(pc) translate([0, 0, z[3]]) bay();
     color(pc) translate([0, 0, z[4]]) deck();
+    if (with_lid) color(pc) translate([0, 0, z[5]]) lid();
 
     for (t = [0, 1]) translate([bx0, by0, z[t] + floor_t + rib_h]) brick_model();
     for (b = [2, 3]) translate([wall + clr, front_frame, z[b] + floor_t]) atom_model();
@@ -459,3 +488,4 @@ else if (part == "airflow") airflow();
 else if (part == "tray") tray();
 else if (part == "bay") bay();
 else if (part == "deck") deck();
+else if (part == "lid") translate([0, D, lid_h]) rotate([180, 0, 0]) lid();
