@@ -49,7 +49,7 @@ lip_h = 10;         // deck front lip (carries the label)
 rib_h = 2;          // brick stands on ribs so air flows underneath
 brick_air = 10;     // air gap above each brick (case reaches ~58 C at full load)
 ssd_rib_h = 3;      // SSD stands on ribs: deck plate is warm from the Atom below
-label = "AI TOP ATOM CLUSTER"; // engraved on the deck lip; "" for none
+label = "PWr genwro.ai property"; // engraved on the deck lip; "" for none
 
 /* [Style] */
 hex_a = 14;         // honeycomb cell pitch
